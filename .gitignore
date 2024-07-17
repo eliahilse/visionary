@@ -1,0 +1,38 @@
+# IDEs
+.vscode
+.idea
+
+# Models
+**/*.onnx
+**/*.pt
+**/*.vsidx
+
+# Other large stuff
+**/*.ipch
+**/*.db
+*.suo
+*.opendb
+*.db-shm
+*.db-wal
+read.lock
+
+# Build artifacts
+*.obj
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.idb
+*.lib
+*.xll
+*.ncb
+*.sdf
+*.lastbuildstate
+*.log
+*.tlog
+*.enc
+*.log
+*.vspscc
+*.vssscc
+*.opensdf
+*.sln.docstates

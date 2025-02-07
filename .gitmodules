@@ -1,0 +1,9 @@
+[submodule "yolo/v9"]
+	path = yolo/v9
+	url = https://github.com/WongKinYiu/yolov9.git
+[submodule "yolo/v7"]
+	path = yolo/v7
+	url = https://github.com/WongKinYiu/yolov7.git
+[submodule "oc-sort"]
+	path = oc-sort
+	url = https://github.com/noahcao/OC_SORT

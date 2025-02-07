@@ -30,6 +30,20 @@ void draw_label(cv::Mat& im, const std::string& label, int x, int y) {
     cv::putText(im, label, cv::Point(x, y + text_size.height), cv::FONT_HERSHEY_SIMPLEX, FONT_SCALE, YELLOW, THICKNESS, cv::LINE_AA);
 }
 
+void checkCudaSupport() {
+    int device_count = cv::cuda::getCudaEnabledDeviceCount();
+    std::cout << "Number of CUDA devices: " << device_count << std::endl;
+
+    if (device_count > 0) {
+        for (int i = 0; i < device_count; ++i) {
+            cv::cuda::printShortCudaDeviceInfo(i);
+        }
+    }
+    else {
+        std::cout << "No CUDA-enabled devices found." << std::endl;
+    }
+}
+
 
 cv::Mat pre_process(const cv::Mat& input_image, cv::dnn::Net& net) {
 
@@ -109,8 +123,11 @@ cv::Mat post_process(cv::Mat& input_image, const cv::Mat& output, const std::vec
 
 
 int liveCameraProto() {
-    int cuda_devices = cv::cuda::getCudaEnabledDeviceCount();
-    std::cout << "cuda on? " << (cuda_devices > 0 ? "y" : "n") << std::endl;
+    checkCudaSupport();
+
+
+    
+
     try {
         std::vector<std::string> classes;
         std::ifstream ifs("assets/coco.names");
@@ -127,6 +144,13 @@ int liveCameraProto() {
         cv::dnn::Net net;
         try {
             net = cv::dnn::readNet("assets/yolov8m.onnx");
+            net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+            net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+
+            // Check build information
+            std::cout << "OpenCV build information:" << std::endl;
+            std::cout << cv::getBuildInformation() << std::endl;
+
         }
         catch (const cv::Exception& e) {
             std::cerr << "error loading network: " << e.what() << std::endl;

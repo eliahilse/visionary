@@ -1,34 +1,57 @@
 # Visionary
 
-Experiments for object detection in real-time, using YOLO v8.
+## Setup
 
-## Pretrained Models
-Pretrained Yolo models can be found e.g. [here](https://github.com/ultralytics/ultralytics).
-Since most modern Yolo models are implemented in PyTorch, the usual format you find pretrained models in is .pt.
-With ultralytics python package, you can easily convert these .pt models to e.g. OpenCV DNN compatible .onnx format.
-```python
-from ultralytics import YOLO
+### OpenCV
+The package manager [vcpkg](https://vcpkg.io/en/package/opencv4) was utilized to install OpenCV (4.10).
 
-model = YOLO("yolov8m.pt")
+Installation:\
+! Ensure that the environmental variable `VCPKG_ROOT` points to your vcpkg installation for Cmake to pick it up properly.
+- CPU -> `vcpkg install opencv4[dnn]`
+- GPU, with CUDA support -> `vcpkg install opencv4[dnn-cuda]`\
+  *Note: you may need to separately install CUDA and CuDNN from Nvidia, if not present on your system.*
+- GPU, without CUDA support -> `vcpkg install opencv4[dnn,opencl]`\
+  *Note: OPENCV_OCL4DNN_CONFIG_PATH tba*
 
-model.export(format="onnx", opset=12, imgsz=[640, 640])
-```
-The ultralytics python package will also automatically attempt to download a suitable .pt file if not found at the specified path.
+You can also explicitly tell vcpkg which platform to build for by adding the postfix `:your-platform` to the end of the command.
+Regarding vcpkg's supported platforms, refer to [here](https://github.com/microsoft/vcpkg/tree/master/triplets).
 
-## C++ Setup
-For C++, OpenCV is required.\
-Easiest way to install that is by utilizing vcpkg package manager.\
-`vcpkg install opencv4`, for cuda support: `vcpkg install opencv4[cuda]`\
-For higher performance it's recommended to install the CUDA version supposing you have an Nvidia GPU so that the model can run on the GPU instead of the CPU.\
-Visual Studio 2022 project files are included. CMake file is on the way.
+Me, working on Windows 64-Bit with CUDA, used `vcpkg install opencv4[dnn-cuda]`
 
-## Python Setup
-Python can be run either with OpenCV or Ultralytics.
-For OpenCV, you need to install the `opencv-python` and `numpy`. For Ultralytics, you need to install the `ultralytics` package.
-For the prototypes you can simply run `pip install -r requirements.txt` in the respective folder as well.
+Pro tip:
+For sped up builds, we recommend setting the `CMAKE_BUILD_PARALLEL_LEVEL` environmental variable to the amount of logical processors (threads) your CPU supports, to ensure maximum parallelization.
+On Windows, that can be done with the command `set CMAKE_BUILD_PARALLEL_LEVEL={amount_max_threads}`.
+
+### Yolo
+
+#### YoloV7
+
+The YoloV7 repository is included in the /yolo/v7 folder, as a git submodule.
+To have it output a model in the onnx (dnn runtime compatible) file format, run the following command:
+`python export.py --weights yolov7-tiny.pt --grid --end2end --simplify --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --img-size 640 640 --max-wh 640`
+
+#### YoloV9
+
+The YoloV9 repository is included in the /yolo/v9 folder, as a git submodule.
+
+To build using it, you either need to download a pretrained model (e.g. via the ones pretrained on the COCO set via https://github.com/WongKinYiu/yolov9/?tab=readme-ov-file#performance)
+s
+To then convert the .pt file to .onnx via the ONNX pipeline:
+`python export.py --weights yolov9-m.pt --simplify --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --imgsz 640 640 --include onnx`
+(or `python3` for unix systems)
+
+### OC-Sort
+
+The OC-Sort repository is included in the /oc-sort folder, as a git submodule.
 
 ## Samples
 <div style="">
   <img src="docs/assets/sample-1.jpg" alt="Sample Image" />
-  <p style="font-size: smaller; margin-top: 0px;">Yolo v8 XL, 30ms inference result on RTX 3070 Ti Laptop, Laptop Camera Feed (real-time)</p>
+  <p style="font-size: smaller; margin-top: 0px;">Yolo v9m, OC-Sort & Cross-Camera matching: 43ms inference on 2x 640x640 camera input feeds</p>
 </div>
+
+## Attributions
+Wong Kin-Yiu, for his [YoloV7](https://github.com/WongKinYiu) and [YoloV9](https://github.com/WongKinYiu/yolov9) implementations.
+Jinkun Cao for [OC-Sort](https://github.com/noahcao/OC_SORT).\
+Fernando B. Giannasi for his [implementation](https://github.com/phoemur/hungarian_algorithm) of the Hungarian algorithm in C++.
+
